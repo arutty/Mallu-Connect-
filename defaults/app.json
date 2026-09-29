@@ -1,0 +1,16 @@
+{
+  "appName": "Web2APK App",
+  "appId": "com.web2apk.app",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "apkName": "",
+  "url": "",
+  "webDir": "",
+  "buildCommand": "",
+  "androidScheme": "https",
+  "allowCleartext": true,
+  "allowNavigation": ["127.0.0.1", "localhost", "10.0.2.2"],
+  "permissions": [],
+  "orientation": "default",
+  "backgroundColor": "#0f1115"
+}
