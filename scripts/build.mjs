@@ -371,6 +371,24 @@ export function printFingerprint(ks) {
   if (line) log(`Signing certificate ${line.trim()}`);
 }
 
+/**
+ * Creates the launcher icons from resources/icon.png.
+ * --assetPath is explicit on purpose: capacitor-assets otherwise looks in ./assets first, and any
+ * unrelated "assets" folder in the Web2APK repo made it print "No assets found" and skip the icons.
+ * If it still reports that, the build stops instead of silently shipping the default Capacitor icon.
+ */
+function generateIcons(cfg) {
+  const args = ['capacitor-assets', 'generate', '--android', '--assetPath', 'resources', '--iconBackgroundColor', cfg.backgroundColor, '--iconBackgroundColorDark', cfg.backgroundColor];
+  log(`$ npx ${args.join(' ')}`);
+  const r = spawnSync('npx', args, { cwd: ROOT, encoding: 'utf8' });
+  if (r.stdout) process.stdout.write(r.stdout);
+  if (r.stderr) process.stderr.write(r.stderr);
+  if (r.error) fail(`npx: ${r.error.message}`);
+  if (r.status !== 0) fail(`Command failed (exit ${r.status}): capacitor-assets`);
+  if (/no assets found/i.test(`${r.stdout || ''}${r.stderr || ''}`))
+    fail('capacitor-assets found no icon source (expected resources/icon.png), so the APK would keep the default icon.');
+}
+
 // ---------------------------------------------------------------- main
 function writeSummary(cfg, info) {
   const lines = [
@@ -418,7 +436,7 @@ export async function main() {
   run('npx', ['cap', 'add', 'android']);
 
   step('Generating launcher icons');
-  run('npx', ['capacitor-assets', 'generate', '--android', '--iconBackgroundColor', cfg.backgroundColor, '--iconBackgroundColorDark', cfg.backgroundColor]);
+  generateIcons(cfg);
 
   step('Applying app settings');
   patchProject(ANDROID_DIR, cfg);
