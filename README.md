@@ -11,6 +11,7 @@
 
 <p align="center"><b>Turn any website or web project into an Android APK using GitHub Actions.</b><br>
 No Android Studio, no local setup. Just copy one folder and push.</p>
+
 ---
 
 ## Supported languages and frameworks ##
@@ -20,7 +21,6 @@ No Android Studio, no local setup. Just copy one folder and push.</p>
 </p>
 
 Web2APK wraps a **web app**, so the language does not matter. Only the way you connect the site changes.
----
 
 <table>
   <tr>
