@@ -60,8 +60,38 @@ Download it, unzip, install. Done.
 | Missing | What happens |
 |---|---|
 | `app.json` | Web2APK's default settings are used |
-| `icon.png` | Web2APK's default icon is used (<img src="assets/logo.png" width="18" align="absmiddle"> this one) |
+| `icon.png` | Web2APK's default icon is used |
 | `index.html` in your project | A simple placeholder page is bundled |
+
+---
+
+## Supported languages and frameworks
+
+<p align="center">
+  <img src="assets/supported.svg" alt="Web2APK works with React, Vue, Angular, PHP, WordPress, plain HTML and more" width="100%">
+</p>
+
+Web2APK wraps a **web app**, so the language does not matter. Only the way you connect the site changes.
+
+| Your project | Mode | What to set in `app.json` |
+|---|---|---|
+| React, Vite, Vue, Angular, Svelte, Next.js (static export), Astro, Nuxt (generate) | Build and bundle | `buildCommand` + `webDir` |
+| PHP, Laravel, WordPress, Django, Flask, Node.js, Rails, ASP.NET, Shopify | Live website URL | `url` |
+| HTML, CSS, JavaScript, jQuery, Tailwind, Bootstrap, PWA | Plain files | nothing (auto-detected) |
+
+Examples:
+
+```json
+{ "appName": "My React App", "appId": "com.me.react", "buildCommand": "npm ci && npm run build", "webDir": "dist" }
+```
+
+```json
+{ "appName": "My Laravel Site", "appId": "com.me.laravel", "url": "https://my-site.com" }
+```
+
+Common `webDir` values: Vite / Vue = `dist`, Create React App = `build`, Astro = `dist`, Angular = `dist/<project-name>`.
+
+> **Note:** Server code (PHP, Python, Node backend) does not run inside the APK. Host it online and use the `url` mode.
 
 ---
 
