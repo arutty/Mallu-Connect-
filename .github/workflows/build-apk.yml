@@ -1,0 +1,71 @@
+# Web2APK - build an Android APK from this web project.
+#
+# HOW TO USE: copy the whole  .github  folder of the Web2APK repo into the root of your
+# web project. It holds exactly three files:
+#   .github/workflows/build-apk.yml   (this file - leave as is)
+#   .github/app.json                  (your app name, id, version ...)
+#   .github/icon.png                  (your app icon)
+# Push (or run manually) -> Actions tab -> Build APK -> run -> Artifacts -> apk
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # The public Web2APK repo that does the real work, as  owner/repo.
+  # People who copy the .github folder do not need to change this.
+  WEB2APK_REPO: bhawan-kavinda/Web2APK
+  # Branch or tag of Web2APK to use. Empty = default branch.
+  WEB2APK_REF: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout web repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Get Web2APK
+        run: |
+          if [ "${GITHUB_REPOSITORY,,}" = "${WEB2APK_REPO,,}" ]; then
+            # running inside the Web2APK repo itself (self-test) - no clone needed
+            echo "W2A_DIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          else
+            git clone --depth 1 ${WEB2APK_REF:+--branch "$WEB2APK_REF"} "https://github.com/$WEB2APK_REPO.git" "$RUNNER_TEMP/Web2APK"
+            echo "W2A_DIR=$RUNNER_TEMP/Web2APK" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build APK
+        env:
+          WEB_DIR: ${{ github.workspace }}
+          CONFIG_DIR: ${{ github.workspace }}/.github
+          OUT_DIR: ${{ github.workspace }}/output
+          # Optional signing key (see example.env). Empty = a temporary key is generated.
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: node "$W2A_DIR/scripts/build.mjs"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: output/*.apk
+          if-no-files-found: error
