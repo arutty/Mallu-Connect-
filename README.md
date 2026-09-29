@@ -12,7 +12,8 @@
 <p align="center"><b>Turn any website or web project into an Android APK using GitHub Actions.</b><br>
 No Android Studio, no local setup. Just copy one folder and push.</p>
 ---
-## Supported languages and frameworks
+
+## Supported languages and frameworks ##
 
 <p align="center">
   <img src="assets/supported.svg" alt="Web2APK works with React, Vue, Angular, PHP, WordPress, plain HTML and more" width="100%">
