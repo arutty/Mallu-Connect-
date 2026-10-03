@@ -23,7 +23,7 @@ env:
   # Release tag of Web2APK to use. It is pinned on purpose: this script receives your signing
   # secrets, so it must not follow a moving branch. Change it only to a tag you trust.
   # (Empty = default branch - not recommended.)
-  WEB2APK_REF: 'v1.0.1'
+  WEB2APK_REF: 'v1.1.0'
 
 jobs:
   build:
