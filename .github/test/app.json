@@ -1,9 +1,9 @@
 {
-  "appName": "elephant App",
-  "appId": "com.elephant.app",
+  "appName": "test App",
+  "appId": "com.test.app",
   "versionName": "1.0.0",
   "versionCode": 1,
-  "apkName": "elephant",
+  "apkName": "test",
   "url": "https://bhawan-kavinda.github.io/elephant/",
   "webDir": "",
   "buildCommand": "",
