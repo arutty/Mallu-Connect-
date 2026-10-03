@@ -1,12 +1,18 @@
-# Web2APK - build one or many Android APKs from this web project.
+# Web2APK - build one or many Android APKs (FORK / MULTI-APP workflow).
 #
-# HOW TO USE: copy the whole  .github  folder of the Web2APK repo into the root of your
-# web project. Layout:
+# WHO USES THIS FILE: people who FORK the Web2APK repo, or who want to build 2-3+ APKs at once.
+# (If you only copy a .github folder into your own project, use  setup/.github  instead.)
+#
+# Layout:
 #   .github/workflows/build-apk.yml   (this file - leave as is)
-#   .github/run.json                  (the list of app folders to build)
+#   .github/run.json                  ("source" + the list of app folders to build)
 #   .github/<app-name>/app.json       (that app's name, id, version ...)
 #   .github/<app-name>/icon.png       (that app's icon)
-# Only the folders listed in run.json are built; every other folder is ignored.
+#
+# run.json "source":
+#   "clone"  (default) -> the official Web2APK release (latest tag, see WEB2APK_REF) is cloned.
+#   "."                -> scripts/build.mjs from THIS repo is used (your own edited fork).
+# Only the folders listed in "builds" are built; every other folder is ignored.
 # Push (or run manually) -> Actions tab -> Build APK -> run -> Artifacts -> apk-<app-name>
 name: Build APK
 
@@ -22,10 +28,13 @@ env:
   # The public Web2APK repo that does the real work, as  owner/repo.
   # People who copy the .github folder do not need to change this.
   WEB2APK_REPO: bhawan-kavinda/Web2APK
-  # Release tag of Web2APK to use. It is pinned on purpose: this script receives your signing
-  # secrets, so it must not follow a moving branch. Change it only to a tag you trust.
-  # (Empty = default branch - not recommended.)
-  WEB2APK_REF: 'v1.1.0'
+  # Which Web2APK release to use when run.json source is "clone".
+  #   'latest'  = always the newest release tag (vX.Y.Z) of the Web2APK repo. Publish a new
+  #               release there and every user gets it automatically.
+  #   'v1.1.0'  = pin one exact tag (safest: this script receives your signing secrets,
+  #               so a pinned tag never changes under you).
+  # Branches are never followed - only release tags. (Empty = same as 'latest'.)
+  WEB2APK_REF: 'latest'
 
 jobs:
   plan:
@@ -33,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.read.outputs.matrix }}
+      source: ${{ steps.read.outputs.source }}
     steps:
       - name: Checkout web repo
         uses: actions/checkout@v4
@@ -50,6 +60,10 @@ jobs:
           if (!fs.existsSync(runFile)) fail('.github/run.json not found. Create it like {"builds": ["my-app"]}');
           let j;
           try { j = JSON.parse(fs.readFileSync(runFile, 'utf8')); } catch (e) { fail(`run.json: ${e.message}`); }
+          const rawSource = j && j.source !== undefined ? j.source : 'clone';
+          const source = typeof rawSource === 'string' ? rawSource.trim() : rawSource;
+          if (source !== 'clone' && source !== '.') fail(`run.json: "source" must be "clone" (official release) or "." (this repo's own build script), got ${JSON.stringify(rawSource)}`);
+          if (source === '.' && !fs.existsSync('scripts/build.mjs')) fail('run.json: "source" is "." but scripts/build.mjs does not exist in this repo. Use a fork of Web2APK, or set "source" to "clone".');
           const builds = j && j.builds;
           if (!Array.isArray(builds) || !builds.length) fail('run.json: "builds" must be a non-empty list of folder names, e.g. {"builds": ["my-app"]}');
 
@@ -70,9 +84,10 @@ jobs:
             matrix.push({ name });
           });
 
+          console.log(`Build script source: ${source === '.' ? '"." (this repo)' : '"clone" (official release)'}`);
           console.log(`Will build ${matrix.length} APK(s):`);
           matrix.forEach((m) => console.log(`  - ${dir}/${m.name}/  (app.json + icon.png)`));
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\nsource=${source}\n`);
           NODE
 
   build:
@@ -99,12 +114,33 @@ jobs:
           java-version: '17'
 
       - name: Get Web2APK
+        env:
+          W2A_SOURCE: ${{ needs.plan.outputs.source }}
         run: |
-          if [ "${GITHUB_REPOSITORY,,}" = "${WEB2APK_REPO,,}" ]; then
+          if [ "$W2A_SOURCE" = "." ]; then
+            # run.json source "." -> use this repo's own scripts/build.mjs (no clone)
+            if [ ! -f "$GITHUB_WORKSPACE/scripts/build.mjs" ]; then
+              echo "::error::run.json source is \".\" but scripts/build.mjs is missing in this repo."
+              exit 1
+            fi
+            echo "Using this repo's build script (source: .)"
+            echo "W2A_DIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          elif [ "${GITHUB_REPOSITORY,,}" = "${WEB2APK_REPO,,}" ]; then
             # running inside the Web2APK repo itself (self-test) - no clone needed
             echo "W2A_DIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
           else
-            git clone --depth 1 ${WEB2APK_REF:+--branch "$WEB2APK_REF"} "https://github.com/$WEB2APK_REPO.git" "$RUNNER_TEMP/Web2APK"
+            REPO_URL="https://github.com/$WEB2APK_REPO.git"
+            REF="$WEB2APK_REF"
+            if [ -z "$REF" ] || [ "$REF" = "latest" ]; then
+              # newest release tag of the form vX.Y.Z (no branches, no pre-release tags)
+              REF=$(git ls-remote --tags --refs --sort=-v:refname "$REPO_URL" 'v*' | sed 's#.*refs/tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+              if [ -z "$REF" ]; then
+                echo "::error::No release tag (vX.Y.Z) found in $WEB2APK_REPO. Publish a release, or set WEB2APK_REF to a tag."
+                exit 1
+              fi
+            fi
+            echo "Cloning official Web2APK $REF (source: clone)"
+            git clone --depth 1 --branch "$REF" "$REPO_URL" "$RUNNER_TEMP/Web2APK"
             echo "W2A_DIR=$RUNNER_TEMP/Web2APK" >> "$GITHUB_ENV"
           fi
 
