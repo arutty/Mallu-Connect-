@@ -5,7 +5,7 @@
 > **This `.github` folder is only for people who FORK the Web2APK repo** (or who want to build 2-3 or more APKs at once).
 >
 > ### ✅ Copying files into your own repo? Use the `setup/` folder instead:
-> **[`setup/.github`](../setup/.github)** - copy that one into the root of your project. It builds a single APK from one `app.json` and one `icon.png`, and always uses the official release.
+> **[`setup/.github`](../setup/.github)** - copy that one into the root of your project, or download the ready-made zip: **[web2apk-setup.zip](https://github.com/bhawan-kavinda/Web2APK/releases/latest/download/web2apk-setup.zip)** (always the newest release). It builds a single APK from one `app.json` and one `icon.png`, and always uses the official release.
 >
 > Do not copy this folder into your own project.
 

@@ -16,7 +16,7 @@ No Android Studio, no local setup. Fork, add your link, run.</p>
 
 > [!IMPORTANT]
 > **Two ways to use Web2APK:**
-> **1)** Fork this repo → uses the root `.github` folder → [**read `.github/README.md`**](.github/README.md)
+> **1)** Fork this repo → uses the root `.github` folder → [**read `.github/README_repo_guide.md`**](.github/README_repo_guide.md)
 > **2)** Copy into your own project repo → uses the **`setup/.github`** folder → [**read `setup/README.md`**](setup/README.md)
 >
 > **Uploading files to your own project? Do NOT use the root `.github` folder. Use `setup/.github`.**
@@ -64,7 +64,7 @@ When it turns green: **Build APK → (latest run) → Artifacts → `apk-my-app`
 
 > Saving `app.json` on `main` also starts a build automatically. For a different app, change only its `app.json` and `icon.png`.
 
-📖 **More details (all options, `source`, release version): [.github/README.md](.github/README.md)**
+📖 **More details (all options, `source`, release version): [.github/README_repo_guide.md](.github/README_repo_guide.md)**
 
 <details>
 <summary>Prefer the terminal? (GitHub CLI)</summary>
@@ -88,26 +88,30 @@ Use this when your web project already lives in **its own repo** and you want th
 > [!WARNING]
 > **Copy the `setup/.github` folder, NOT the root `.github` folder.** The root one is only for forks and multi-app builds.
 > This way builds **one APK** from one `app.json` + one `icon.png`, always with the official release.
+>
+> 📦 **Ready-made zip (always the newest release): [web2apk-setup.zip](https://github.com/bhawan-kavinda/Web2APK/releases/latest/download/web2apk-setup.zip)**
 
 📖 **More details: [setup/README.md](setup/README.md)**
 
 <table>
   <tr>
-    <td align="center" width="25%"><img src="assets/icons/copy.svg" width="56"><br><b>1. Copy</b><br><sub>the <code>setup/.github</code> folder<br>into your project</sub></td>
+    <td align="center" width="25%"><img src="assets/icons/copy.svg" width="56"><br><b>1. Copy</b><br><sub>the <code>.github</code> folder from<br><a href="https://github.com/bhawan-kavinda/Web2APK/releases/latest/download/web2apk-setup.zip">web2apk-setup.zip</a></sub></td>
     <td align="center" width="25%"><img src="assets/icons/edit.svg" width="56"><br><b>2. Edit</b><br><sub><code>app.json</code> and<br><code>icon.png</code></sub></td>
     <td align="center" width="25%"><img src="assets/icons/push.svg" width="56"><br><b>3. Push</b><br><sub>to <code>main</code> or<br><code>master</code></sub></td>
     <td align="center" width="25%"><img src="assets/icons/download.svg" width="56"><br><b>4. Download</b><br><sub>your APK from<br>Actions &rarr; Artifacts</sub></td>
   </tr>
 </table>
 
-**1. Copy the `setup/.github` folder**
-Download this repo (**Code → Download ZIP**) and copy the **`setup/.github`** folder into the **root of your web project**, next to your `index.html`.
+**1. Download the zip and copy its `.github` folder**
+Download **[web2apk-setup.zip](https://github.com/bhawan-kavinda/Web2APK/releases/latest/download/web2apk-setup.zip)** (always the newest release), unzip it, and copy the **`.github`** folder from it into the **root of your web project**, next to your `index.html`.
+
+> The folder name starts with a dot, so it may look hidden. Turn on "show hidden files" in your file manager.
 
 ```
 your-web-project/
 ├── index.html
 ├── ...your site files
-└── .github/                ← copied from setup/.github
+└── .github/                ← from web2apk-setup.zip
     ├── workflows/
     │   └── build-apk.yml   ← leave as is
     ├── app.json            ← edit this
@@ -255,7 +259,7 @@ Your workflow gets the Web2APK build script, reads your `app.json` and `icon.png
 - **Fork (root `.github`)**: `run.json` → `"source": "clone"` uses the official release, `"source": "."` uses the script from your fork.
 
 ```
-.github/                          for forks / multi-app (see .github/README.md)
+.github/                          for forks / multi-app (see .github/README_repo_guide.md)
 setup/.github/                    the folder to copy into your own project (see setup/README.md)
 scripts/build.mjs                 the whole build
 defaults/                         fallback app.json and icon.png
