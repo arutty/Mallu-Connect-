@@ -123,6 +123,10 @@ export function validate(cfg) {
   if (!/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/.test(cfg.appId))
     bad(`"appId" must look like com.company.app (letters/digits/underscore, at least two parts), got "${cfg.appId}"`);
 
+  const reserved = new Set(['abstract', 'assert', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'default', 'do', 'double', 'else', 'enum', 'extends', 'final', 'finally', 'float', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'int', 'interface', 'long', 'native', 'new', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'strictfp', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'try', 'void', 'volatile', 'while', 'true', 'false', 'null', '_']);
+  const badPart = cfg.appId.split('.').find((x) => reserved.has(x.toLowerCase()));
+  if (badPart) bad(`"appId" part "${badPart}" is a reserved Java word and breaks the Android build - pick another name, got "${cfg.appId}"`);
+
   const code = Number(cfg.versionCode);
   if (!Number.isInteger(code) || code < 1 || code > 2100000000) bad('"versionCode" must be a positive integer');
   cfg.versionCode = code;
@@ -167,11 +171,13 @@ function findWebRoot(cfg) {
       fail(`"webDir" is "${cfg.webDir}" but ${path.join(p, 'index.html')} does not exist (did the buildCommand run?)`);
     return p;
   }
-  for (const c of ['dist', 'build', 'www', 'public', 'docs']) {
+  for (const c of ['dist', 'build', 'www', 'public']) {
     const p = path.join(WEB_DIR, c);
     if (fs.existsSync(path.join(p, 'index.html'))) return p;
   }
+  // a root index.html is the site itself; docs/ (often GitHub Pages documentation) is only a last resort
   if (fs.existsSync(path.join(WEB_DIR, 'index.html'))) return WEB_DIR;
+  if (fs.existsSync(path.join(WEB_DIR, 'docs', 'index.html'))) return path.join(WEB_DIR, 'docs');
   return null;
 }
 
@@ -204,14 +210,20 @@ function prepareWeb(cfg) {
 
   const root = findWebRoot(cfg);
   if (!root) {
-    warn('No index.html found in the web repo (looked in dist, build, www, public, docs and the repo root) - building with a placeholder page. Set "webDir" or "url" in app.json.');
+    warn('No index.html found in the web repo (looked in dist, build, www, public, the repo root and docs) - building with a placeholder page. Set "webDir" or "url" in app.json.');
     copyDir(path.join(ROOT, 'placeholder'), WWW_DIR);
     return;
   }
   warnIfBuildBased(cfg, root);
   log(`Bundling web files from ${root}`);
-  const skipTop = new Set(['.git', '.github', 'node_modules', 'output', '.web2apk']);
-  copyDir(root, WWW_DIR, (p) => root !== WEB_DIR || !skipTop.has(path.relative(root, p).split(path.sep)[0]));
+  const skipTop = new Set(['.git', '.github', 'node_modules', 'output', '.web2apk', '.env']);
+  // When the web folder is the Web2APK folder itself, also skip the files this script generates
+  // (otherwise www/ is copied into itself forever and .keystore would end up inside the APK).
+  if (WEB_DIR === ROOT) ['www', 'android', 'resources', '.keystore', 'capacitor.config.json'].forEach((n) => skipTop.add(n));
+  copyDir(root, WWW_DIR, (p) => {
+    if (path.resolve(p) === WWW_DIR || path.resolve(p) === ANDROID_DIR) return false; // destination inside source -> infinite recursion
+    return root !== WEB_DIR || !skipTop.has(path.relative(root, p).split(path.sep)[0]);
+  });
 }
 
 export function writeCapacitorConfig(cfg) {

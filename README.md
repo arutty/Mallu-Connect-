@@ -109,7 +109,7 @@ Only change what you need. Missing keys use the defaults. Keys starting with `_`
 | `versionCode` | Whole number, **must increase** with every release | `1` |
 | `apkName` | Output file name, without `.apk` | from `appName` |
 | `url` | Load a **live website** instead of bundling files, e.g. `https://example.com` | empty |
-| `webDir` | Folder with the built site (empty = auto-detect `dist`, `build`, `www`, `public`, `docs`, then root) | empty |
+| `webDir` | Folder with the built site (empty = auto-detect `dist`, `build`, `www`, `public`, then root, then `docs`) | empty |
 | `buildCommand` | Run before bundling, e.g. `npm ci && npm run build` | empty |
 | `allowNavigation` | Hosts allowed inside the app. Other links open in the browser. Wildcards work: `*.example.com` | localhost only |
 | `permissions` | Extra Android permissions, e.g. `["CAMERA", "ACCESS_FINE_LOCATION"]` | none |

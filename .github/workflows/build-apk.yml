@@ -20,8 +20,10 @@ env:
   # The public Web2APK repo that does the real work, as  owner/repo.
   # People who copy the .github folder do not need to change this.
   WEB2APK_REPO: bhawan-kavinda/Web2APK
-  # Branch or tag of Web2APK to use. Empty = default branch.
-  WEB2APK_REF: ''
+  # Release tag of Web2APK to use. It is pinned on purpose: this script receives your signing
+  # secrets, so it must not follow a moving branch. Change it only to a tag you trust.
+  # (Empty = default branch - not recommended.)
+  WEB2APK_REF: 'v1.0.1'
 
 jobs:
   build:

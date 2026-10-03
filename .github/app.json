@@ -17,7 +17,7 @@
   "_url": "Live website address to load, e.g. https://example.com (empty = bundle this repo's web files)",
   "url": "",
 
-  "_webDir": "Folder with the built site (empty = auto-detect dist, build, www, public, docs, then repo root)",
+  "_webDir": "Folder with the built site (empty = auto-detect dist, build, www, public, then repo root, then docs)",
   "webDir": "",
 
   "_buildCommand": "Run before bundling if the site needs a build, e.g. npm ci && npm run build (then set webDir to dist)",
