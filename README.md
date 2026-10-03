@@ -10,14 +10,29 @@
 </p>
 
 <p align="center"><b>Turn any website or web project into an Android APK using GitHub Actions.</b><br>
-No Android Studio, no local setup. Fork, add your link, run.</p>
+No Android Studio, no local setup. Pick your way, add your link, run.</p>
 
 ---
 
-## ⚡ Easy setup (recommended, 3 steps)
+## 🧭 Which way is for you?
 
-> [!TIP]
-> **No files to copy.** Fork this repo, put your site's link in `app.json`, press **Run workflow**. That's it.
+There are **two ways** to use Web2APK. Pick one:
+
+| | 🅰️ **Fork this repo** | 🅱️ **Copy into your own project** |
+|---|---|---|
+| **For** | Building APKs from a fork, or **2-3+ APKs at once** | Your web project already lives in **its own repo** and you want **one APK** built there |
+| **What you use** | the **root** [`.github`](.github) folder | the [`setup/.github`](setup/.github) folder |
+| **Config** | `run.json` + one folder per app (`app.json` + `icon.png`) | one `.github/app.json` + one `.github/icon.png` |
+| **Build script** | your choice: official release, or your edited fork | always the official release |
+| **Full guide** | 👉 **[.github/README.md](.github/README.md)** | 👉 **[setup/README.md](setup/README.md)** |
+
+> [!WARNING]
+> **Uploading files to your own project repo? Use the `setup/` folder, NOT the root `.github` folder.**
+> The root `.github` folder is only for forks and multi-app builds.
+
+---
+
+## ⚡ 🅰️ Fork this repo (quick view)
 
 <p align="center">
   <img src="assets/easy-setup.svg" alt="Easy setup: 1 Fork, 2 Add your link, 3 Run, 4 Download your APK" width="100%">
@@ -26,82 +41,64 @@ No Android Studio, no local setup. Fork, add your link, run.</p>
 ### <img src="assets/icons/fork.svg" width="30" align="absmiddle"> 1. Fork this repo
 Click **Fork** (top right of this page).
 
-### <img src="assets/icons/link.svg" width="30" align="absmiddle"> 2. Add your live link
-Open `.github/app.json` in your fork, click the pencil, and set:
+### <img src="assets/icons/link.svg" width="30" align="absmiddle"> 2. Add your app
+In your fork, make a folder inside `.github/` (e.g. `my-app`), put your `app.json` and `icon.png` in it, and list it in `.github/run.json`:
 
 ```json
-{
-  "appName": "My Shop",
-  "appId": "com.me.shop",
-  "url": "https://my-shop.com"
-}
+{ "source": "clone", "builds": ["my-app"] }
 ```
 
-- `url` → the **live link** of your site. The app always shows the live site.
-- `buildCommand` (+ `webDir`) → only if your site's **source code is inside the fork** and needs a build, e.g. `"buildCommand": "npm ci && npm run build", "webDir": "dist"`.
-- Optional: replace `.github/icon.png` with your logo (square, 1024×1024 is best).
+- `source: "clone"` → uses the official Web2APK release. `source: "."` → uses the build script from your own fork.
+- List several folders to build **several APKs at once**.
 
 ### <img src="assets/icons/run.svg" width="30" align="absmiddle"> 3. Run it, then download
 Open **Actions**, press **I understand my workflows, go ahead and enable them**, choose **Build APK → Run workflow**.
-When it turns green: **Build APK → (latest run) → Artifacts → apk**. Download, unzip, install. Done.
+When it turns green: **Build APK → (latest run) → Artifacts → `apk-my-app`**. Download, unzip, install. Done.
 
-> Saving `app.json` on `main` also starts a build automatically. For a different app, change only `app.json` and `icon.png`.
+📖 **More details (all options, `source`, release version): [.github/README.md](.github/README.md)**
 
 <details>
 <summary>Prefer the terminal? (GitHub CLI)</summary>
 
 ```bash
 gh repo fork bhawan-kavinda/Web2APK --clone
-# edit .github/app.json, then:
-git commit -am "my app" && git push
+# add .github/my-app/app.json + icon.png, list it in .github/run.json, then:
+git add -A && git commit -m "my app" && git push
 gh workflow run "Build APK"
 gh run watch
-gh run download -n apk
+gh run download -n apk-my-app
 ```
 </details>
 
 ---
 
-## 🛠 Advanced setup (copy the workflow into your own project)
+## 🛠 🅱️ Copy into your own project (quick view)
 
-Use this when your web project already lives in **its own repo** and you want the APK built there instead of in a fork.
+Use this when your web project already lives in **its own repo** and you want **one APK** built there.
 
 <table>
   <tr>
-    <td align="center" width="25%"><img src="assets/icons/copy.svg" width="56"><br><b>1. Copy</b><br><sub>the <code>.github</code> folder<br>into your project</sub></td>
+    <td align="center" width="25%"><img src="assets/icons/copy.svg" width="56"><br><b>1. Copy</b><br><sub>the <code>setup/.github</code> folder<br>into your project</sub></td>
     <td align="center" width="25%"><img src="assets/icons/edit.svg" width="56"><br><b>2. Edit</b><br><sub><code>app.json</code> and<br><code>icon.png</code></sub></td>
     <td align="center" width="25%"><img src="assets/icons/push.svg" width="56"><br><b>3. Push</b><br><sub>to <code>main</code> or<br><code>master</code></sub></td>
     <td align="center" width="25%"><img src="assets/icons/download.svg" width="56"><br><b>4. Download</b><br><sub>your APK from<br>Actions &rarr; Artifacts</sub></td>
   </tr>
 </table>
 
-**1. Copy the `.github` folder**
-Download this repo (**Code → Download ZIP**) and copy its `.github` folder into the **root of your web project**, next to your `index.html`.
-
 ```
 your-web-project/
 ├── index.html
 ├── ...your site files
-└── .github/
+└── .github/                ← copied from  setup/.github
     ├── workflows/
     │   └── build-apk.yml   ← leave as is
     ├── app.json            ← edit this
     └── icon.png            ← replace with your logo
 ```
 
-**2. Edit two files**
-- `.github/app.json` → app name, package id, version (see the Settings table below)
-- `.github/icon.png` → your app icon (square, 1024×1024 is best)
+After pushing, open **Actions → Build APK → (latest run) → Artifacts → `apk`**.
 
-**3. Push to GitHub**
-Push to the `main` or `master` branch (or run the workflow by hand).
-Then open:
-
-> **Actions → Build APK → (latest run) → Artifacts → apk**
-
-Download it, unzip, install. Done.
-
-> **Want a different app?** Change only `app.json` and `icon.png`.
+📖 **More details (all `app.json` settings, signing key, troubleshooting): [setup/README.md](setup/README.md)**
 
 ---
 
@@ -109,8 +106,7 @@ Download it, unzip, install. Done.
 
 | Missing | What happens |
 |---|---|
-| `app.json` | Web2APK's default settings are used |
-| `icon.png` | Web2APK's default icon is used |
+| `app.json` or `icon.png` | The build **stops** with a clear error that names the missing file |
 | `index.html` in your project | A simple placeholder page is bundled |
 
 ---
@@ -122,7 +118,6 @@ Download it, unzip, install. Done.
 </p>
 
 Web2APK wraps a **web app**, so the language does not matter. Only the way you connect the site changes.
-
 
 | Your project | Mode | What to set in `app.json` |
 |---|---|---|
@@ -146,36 +141,6 @@ Common `webDir` values: Vite / Vue = `dist`, Create React App = `build`, Astro =
 
 ---
 
-## <img src="assets/icons/settings.svg" width="30" align="absmiddle"> Settings (`app.json`)
-
-Only change what you need. Missing keys use the defaults. Keys starting with `_` are notes and are ignored.
-
-| Key | Meaning | Default |
-|---|---|---|
-| `appName` | Name under the app icon | `Web2APK App` |
-| `appId` | Unique package name, e.g. `com.me.myapp` (use a new one for each app) | `com.web2apk.app` |
-| `versionName` | Version shown to users | `1.0.0` |
-| `versionCode` | Whole number, **must increase** with every release | `1` |
-| `apkName` | Output file name, without `.apk` | from `appName` |
-| `url` | Load a **live website** instead of bundling files, e.g. `https://example.com` | empty |
-| `webDir` | Folder with the built site (empty = auto-detect `dist`, `build`, `www`, `public`, then root, then `docs`) | empty |
-| `buildCommand` | Run before bundling, e.g. `npm ci && npm run build` | empty |
-| `allowNavigation` | Hosts allowed inside the app. Other links open in the browser. Wildcards work: `*.example.com` | localhost only |
-| `permissions` | Extra Android permissions, e.g. `["CAMERA", "ACCESS_FINE_LOCATION"]` | none |
-| `orientation` | `default`, `portrait` or `landscape` | `default` |
-| `backgroundColor` | Icon and app background colour | `#0f1115` |
-| `splashColor` | Splash screen colour while the app starts. Your icon is shown in the middle | same as `backgroundColor` |
-| `offlinePage` | With `url`: show a "No connection" page with a retry button when the site cannot be loaded | `true` |
-| `androidScheme` / `allowCleartext` | `https` or `http` / allow plain `http://` traffic | `https` / `true` |
-
-Minimal example:
-
-```json
-{ "appName": "My Shop", "appId": "com.me.shop", "url": "https://my-shop.com" }
-```
-
----
-
 ## <img src="assets/icons/bulb.svg" width="30" align="absmiddle"> Common cases
 
 **My site is already online** → set `url` to its address. The app always shows the live site, so you don't need to rebuild when the site changes.
@@ -186,27 +151,15 @@ Minimal example:
 
 **I need camera or location** → add `CAMERA` / `ACCESS_FINE_LOCATION` to `permissions`.
 
+All `app.json` keys are explained in **[setup/README.md → app.json](setup/README.md#appjson)** (the same keys work for both ways).
+
 ---
 
 ## <img src="assets/icons/key.svg" width="30" align="absmiddle"> Signing key (optional, needed for updates and Play Store)
 
-By default every build uses a **temporary key**. The APK installs fine, but Android will **not** accept it as an *update* over an APK built with a different key.
+By default every build uses a **temporary key**. The APK installs fine, but Android will **not** accept it as an *update* over an APK built with a different key. For updates or the Play Store, use one fixed key.
 
-If you release updates or publish to the Play Store, use one fixed key:
-
-1. Create it once:
-   ```bash
-   keytool -genkeypair -v -keystore my.keystore -alias myalias -keyalg RSA -keysize 2048 -validity 10000
-   base64 -w0 my.keystore
-   ```
-2. In your web repo go to **Settings → Secrets and variables → Actions → New repository secret** and add:
-
-   | Secret | Value |
-   |---|---|
-   | `KEYSTORE_BASE64` | the base64 text from above |
-   | `KEYSTORE_PASSWORD` | your keystore password |
-   | `KEY_ALIAS` | `myalias` |
-   | `KEY_PASSWORD` | optional, defaults to the keystore password |
+📖 **How to create it and which secrets to add: [setup/README.md → Signing key](setup/README.md#signing-key-optional)**
 
 Never commit your keystore or passwords.
 
@@ -217,19 +170,31 @@ Never commit your keystore or passwords.
 - **The `.github` folder is invisible:** names starting with a dot are hidden. Turn on "show hidden files". On the GitHub website use **Add file → Create new file** and type `.github/workflows/build-apk.yml` as the name.
 - **Fork: no Run workflow button:** forks start with Actions turned off. Open the **Actions** tab and enable workflows first.
 - **No workflow runs:** check that you pushed to `main` or `master` and that Actions are enabled in your repo.
-- **Build fails:** open the failed run and read the red error line. Most errors are a typo in `app.json` (e.g. an invalid `appId`).
+- **Build fails:** open the failed run and read the red error line. Most errors are a typo in `app.json` (e.g. an invalid `appId`) or a missing file.
 - **Blank screen in the app:** with `url`, the site must be online; without it, make sure `index.html` (or your `webDir`) exists.
+
+More help: [.github/README.md](.github/README.md) (fork / multi-app) · [setup/README.md](setup/README.md) (own project).
 
 ---
 
 ## <img src="assets/icons/flow.svg" width="30" align="absmiddle"> How it works
 
-Your workflow clones this public repo, reads your `app.json` and `icon.png`, wraps your site with [Capacitor](https://capacitorjs.com), builds and signs a release APK, and uploads it as an artifact in **your own** Actions tab.
+The workflow reads your `app.json` and `icon.png`, gets the Web2APK build script, wraps your site with [Capacitor](https://capacitorjs.com), builds and signs a release APK, and uploads it as an artifact in **your own** Actions tab.
+
+- 🅱️ **Own project (`setup/`)**: the build script is always cloned from the newest **official release tag**.
+- 🅰️ **Fork (root `.github`)**: `run.json` → `"source": "clone"` uses the official release, `"source": "."` uses the script from your fork.
 
 ```
-.github/workflows/build-apk.yml   workflow users copy
-.github/app.json                  starter settings
-.github/icon.png                  starter icon
+.github/                          for forks / multi-app (see .github/README.md)
+├── workflows/build-apk.yml
+├── run.json                      source + list of apps to build
+└── <app-name>/app.json + icon.png
+setup/                            for your own project (see setup/README.md)
+├── README.md
+└── .github/                      copy this folder into your project
+    ├── workflows/build-apk.yml
+    ├── app.json
+    └── icon.png
 scripts/build.mjs                 the whole build
 defaults/                         fallback app.json and icon.png
 placeholder/index.html            page used when no site is found
