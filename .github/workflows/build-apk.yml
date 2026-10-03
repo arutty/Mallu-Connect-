@@ -20,7 +20,11 @@ name: Build APK
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:
+    # A push that changes ONLY .md files (README, guides, notes) does not start a build.
+    # If the push also changes any other file, the build runs as usual.
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:      # the Run workflow button always works
 
 permissions:
   contents: read
