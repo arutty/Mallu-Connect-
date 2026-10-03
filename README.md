@@ -14,10 +14,19 @@ No Android Studio, no local setup. Fork, add your link, run.</p>
 
 ---
 
+> [!IMPORTANT]
+> **Two ways to use Web2APK:**
+> **1)** Fork this repo → uses the root `.github` folder → [**read `.github/README.md`**](.github/README.md)
+> **2)** Copy into your own project repo → uses the **`setup/.github`** folder → [**read `setup/README.md`**](setup/README.md)
+>
+> **Uploading files to your own project? Do NOT use the root `.github` folder. Use `setup/.github`.**
+
+---
+
 ## ⚡ Easy setup (recommended, 3 steps)
 
 > [!TIP]
-> **No files to copy.** Fork this repo, put your site's link in `app.json`, press **Run workflow**. That's it.
+> **No files to copy.** Fork this repo, add your app (`app.json` + `icon.png`) and list it in `run.json`, press **Run workflow**. That's it.
 
 <p align="center">
   <img src="assets/easy-setup.svg" alt="Easy setup: 1 Fork, 2 Add your link, 3 Run, 4 Download your APK" width="100%">
@@ -27,7 +36,7 @@ No Android Studio, no local setup. Fork, add your link, run.</p>
 Click **Fork** (top right of this page).
 
 ### <img src="assets/icons/link.svg" width="30" align="absmiddle"> 2. Add your live link
-Open `.github/app.json` in your fork, click the pencil, and set:
+In your fork, make a folder inside `.github/` (e.g. `my-app`). Put your `app.json` (start from `.github/example.app.json`) and `icon.png` in it, and set:
 
 ```json
 {
@@ -39,24 +48,34 @@ Open `.github/app.json` in your fork, click the pencil, and set:
 
 - `url` → the **live link** of your site. The app always shows the live site.
 - `buildCommand` (+ `webDir`) → only if your site's **source code is inside the fork** and needs a build, e.g. `"buildCommand": "npm ci && npm run build", "webDir": "dist"`.
-- Optional: replace `.github/icon.png` with your logo (square, 1024×1024 is best).
+- Your logo goes in `icon.png` (square, 1024×1024 is best).
+- Then list the folder in `.github/run.json`:
+
+```json
+{ "source": "clone", "builds": ["my-app"] }
+```
+
+- `source: "clone"` → the official Web2APK release is used. `source: "."` → the build script from **your fork** is used.
+- List several folders in `builds` to build **several APKs at once**.
 
 ### <img src="assets/icons/run.svg" width="30" align="absmiddle"> 3. Run it, then download
 Open **Actions**, press **I understand my workflows, go ahead and enable them**, choose **Build APK → Run workflow**.
-When it turns green: **Build APK → (latest run) → Artifacts → apk**. Download, unzip, install. Done.
+When it turns green: **Build APK → (latest run) → Artifacts → `apk-my-app`**. Download, unzip, install. Done.
 
-> Saving `app.json` on `main` also starts a build automatically. For a different app, change only `app.json` and `icon.png`.
+> Saving `app.json` on `main` also starts a build automatically. For a different app, change only its `app.json` and `icon.png`.
+
+📖 **More details (all options, `source`, release version): [.github/README.md](.github/README.md)**
 
 <details>
 <summary>Prefer the terminal? (GitHub CLI)</summary>
 
 ```bash
 gh repo fork bhawan-kavinda/Web2APK --clone
-# edit .github/app.json, then:
-git commit -am "my app" && git push
+# add .github/my-app/app.json + icon.png, list it in .github/run.json, then:
+git add -A && git commit -m "my app" && git push
 gh workflow run "Build APK"
 gh run watch
-gh run download -n apk
+gh run download -n apk-my-app
 ```
 </details>
 
@@ -66,23 +85,29 @@ gh run download -n apk
 
 Use this when your web project already lives in **its own repo** and you want the APK built there instead of in a fork.
 
+> [!WARNING]
+> **Copy the `setup/.github` folder, NOT the root `.github` folder.** The root one is only for forks and multi-app builds.
+> This way builds **one APK** from one `app.json` + one `icon.png`, always with the official release.
+
+📖 **More details: [setup/README.md](setup/README.md)**
+
 <table>
   <tr>
-    <td align="center" width="25%"><img src="assets/icons/copy.svg" width="56"><br><b>1. Copy</b><br><sub>the <code>.github</code> folder<br>into your project</sub></td>
+    <td align="center" width="25%"><img src="assets/icons/copy.svg" width="56"><br><b>1. Copy</b><br><sub>the <code>setup/.github</code> folder<br>into your project</sub></td>
     <td align="center" width="25%"><img src="assets/icons/edit.svg" width="56"><br><b>2. Edit</b><br><sub><code>app.json</code> and<br><code>icon.png</code></sub></td>
     <td align="center" width="25%"><img src="assets/icons/push.svg" width="56"><br><b>3. Push</b><br><sub>to <code>main</code> or<br><code>master</code></sub></td>
     <td align="center" width="25%"><img src="assets/icons/download.svg" width="56"><br><b>4. Download</b><br><sub>your APK from<br>Actions &rarr; Artifacts</sub></td>
   </tr>
 </table>
 
-**1. Copy the `.github` folder**
-Download this repo (**Code → Download ZIP**) and copy its `.github` folder into the **root of your web project**, next to your `index.html`.
+**1. Copy the `setup/.github` folder**
+Download this repo (**Code → Download ZIP**) and copy the **`setup/.github`** folder into the **root of your web project**, next to your `index.html`.
 
 ```
 your-web-project/
 ├── index.html
 ├── ...your site files
-└── .github/
+└── .github/                ← copied from setup/.github
     ├── workflows/
     │   └── build-apk.yml   ← leave as is
     ├── app.json            ← edit this
@@ -224,12 +249,14 @@ Never commit your keystore or passwords.
 
 ## <img src="assets/icons/flow.svg" width="30" align="absmiddle"> How it works
 
-Your workflow clones this public repo, reads your `app.json` and `icon.png`, wraps your site with [Capacitor](https://capacitorjs.com), builds and signs a release APK, and uploads it as an artifact in **your own** Actions tab.
+Your workflow gets the Web2APK build script, reads your `app.json` and `icon.png`, wraps your site with [Capacitor](https://capacitorjs.com), builds and signs a release APK, and uploads it as an artifact in **your own** Actions tab.
+
+- **Own project (`setup/`)**: the build script is always cloned from the newest **official release tag**.
+- **Fork (root `.github`)**: `run.json` → `"source": "clone"` uses the official release, `"source": "."` uses the script from your fork.
 
 ```
-.github/workflows/build-apk.yml   workflow users copy
-.github/app.json                  starter settings
-.github/icon.png                  starter icon
+.github/                          for forks / multi-app (see .github/README.md)
+setup/.github/                    the folder to copy into your own project (see setup/README.md)
 scripts/build.mjs                 the whole build
 defaults/                         fallback app.json and icon.png
 placeholder/index.html            page used when no site is found

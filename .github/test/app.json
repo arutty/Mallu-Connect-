@@ -1,0 +1,18 @@
+{
+  "appName": "test App",
+  "appId": "com.test.app",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "apkName": "test",
+  "url": "https://bhawan-kavinda.github.io/elephant/",
+  "webDir": "",
+  "buildCommand": "",
+  "androidScheme": "https",
+  "allowCleartext": true,
+  "allowNavigation": ["127.0.0.1", "localhost", "10.0.2.2"],
+  "permissions": [],
+  "orientation": "default",
+  "backgroundColor": "#0f1115",
+  "splashColor": "",
+  "offlinePage": true
+}

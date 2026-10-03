@@ -4,12 +4,15 @@
  *
  * Inputs (all optional, passed as environment variables):
  *   WEB_DIR     the web project to wrap           (default: current directory)
- *   CONFIG_DIR  folder holding app.json + icon.png (default: $WEB_DIR/.github)
+ *   CONFIG_DIR  folder holding the config json + icon png (default: $WEB_DIR/.github)
+ *   CONFIG_FILE name of the config json inside CONFIG_DIR (default: app.json)
+ *   ICON_FILE   name of the icon png inside CONFIG_DIR    (default: icon.png)
  *   OUT_DIR     where the finished APK is written  (default: $WEB_DIR/output)
  *   KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD   signing key
  *
- * Missing app.json  -> defaults/app.json is used
- * Missing icon.png  -> defaults/icon.png is used
+ * Missing default app.json / icon.png -> defaults/ are used
+ * CONFIG_FILE / ICON_FILE set but missing -> the build stops (no silent fallback)
+ * Only the files named by CONFIG_FILE / ICON_FILE are read; every other file in CONFIG_DIR is ignored.
  * Missing keystore  -> a temporary one is generated for this build
  *
  * Flag: --prepare-only  stops after generating config/www/icon (no npm, no Gradle).
@@ -25,6 +28,10 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const WEB_DIR = path.resolve(process.env.WEB_DIR || process.cwd());
 const CONFIG_DIR = path.resolve(process.env.CONFIG_DIR || path.join(WEB_DIR, '.github'));
 const OUT_DIR = path.resolve(process.env.OUT_DIR || path.join(WEB_DIR, 'output'));
+const CONFIG_FILE = (process.env.CONFIG_FILE || '').trim();
+const ICON_FILE = (process.env.ICON_FILE || '').trim();
+const CONFIG_NAME = CONFIG_FILE || 'app.json';
+const ICON_NAME = ICON_FILE || 'icon.png';
 const PREPARE_ONLY = process.argv.includes('--prepare-only');
 
 const ANDROID_DIR = path.join(ROOT, 'android');
@@ -47,6 +54,13 @@ function run(cmd, args, opts = {}) {
   const r = spawnSync(cmd, args, { stdio: 'inherit', cwd: ROOT, ...spawnOpts });
   if (r.error) fail(`${cmd}: ${r.error.message}`);
   if (r.status !== 0) fail(`Command failed (exit ${r.status}): ${cmd}`);
+}
+
+/** A file name given by CONFIG_FILE / ICON_FILE must sit directly inside CONFIG_DIR (no sub-folders, no ..). */
+function inConfigDir(name, label) {
+  const p = path.resolve(CONFIG_DIR, name);
+  if (path.dirname(p) !== CONFIG_DIR) fail(`${label} must be a plain file name inside ${CONFIG_DIR}, got "${name}"`);
+  return p;
 }
 
 function readJson(file) {
@@ -94,11 +108,12 @@ const OPTIONAL_EMPTY = new Set(['url', 'webDir', 'buildCommand', 'apkName']);
 
 export function loadConfig() {
   const defaults = readJson(path.join(ROOT, 'defaults', 'app.json'));
-  const userFile = path.join(CONFIG_DIR, 'app.json');
+  const userFile = inConfigDir(CONFIG_NAME, 'CONFIG_FILE');
   const custom = fs.existsSync(userFile);
+  if (CONFIG_FILE && !custom) fail(`Config file not found: ${userFile}`);
   const user = custom ? readJson(userFile) : {};
   if (custom) log(`Config: ${userFile}`);
-  else log('Config: no app.json found -> using Web2APK defaults');
+  else log(`Config: no ${CONFIG_NAME} found -> using Web2APK defaults`);
 
   const cfg = { ...defaults };
   for (const [k, raw] of Object.entries(user)) {
@@ -265,12 +280,13 @@ export function writeCapacitorConfig(cfg) {
 
 // ---------------------------------------------------------------- icon
 function pickIcon() {
-  const mine = path.join(CONFIG_DIR, 'icon.png');
+  const mine = inConfigDir(ICON_NAME, 'ICON_FILE');
+  if (ICON_FILE && !fs.existsSync(mine)) fail(`Icon file not found: ${mine}`);
   if (fs.existsSync(mine)) {
     log(`Icon: ${mine}`);
     return { file: mine, custom: true };
   }
-  log('Icon: no icon.png found -> using Web2APK default icon');
+  log(`Icon: no ${ICON_NAME} found -> using Web2APK default icon`);
   return { file: path.join(ROOT, 'defaults', 'icon.png'), custom: false };
 }
 
@@ -448,8 +464,8 @@ function writeSummary(cfg, info) {
     '### APK built',
     `- **App:** ${cfg.appName} (\`${cfg.appId}\`) v${cfg.versionName} (code ${cfg.versionCode})`,
     `- **Content:** ${cfg.url ? `loads ${cfg.url}` : 'bundled web files'}`,
-    `- **Config:** ${info.customConfig ? 'your app.json' : 'default (no app.json found)'}`,
-    `- **Icon:** ${info.customIcon ? 'your icon.png' : 'default (no icon.png found)'}`,
+    `- **Config:** ${info.customConfig ? `your ${CONFIG_NAME}` : `default (no ${CONFIG_NAME} found)`}`,
+    `- **Icon:** ${info.customIcon ? `your ${ICON_NAME}` : `default (no ${ICON_NAME} found)`}`,
     `- **Signing:** ${info.keystore.generated ? 'temporary generated keystore - this APK cannot update an APK signed with another key. See example.env to use a fixed key.' : 'your keystore'}`,
     `- **File:** \`${path.basename(info.apk)}\` (${(fs.statSync(info.apk).size / 1048576).toFixed(1)} MB)`,
     '',
