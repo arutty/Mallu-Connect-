@@ -1,4 +1,4 @@
 {
   "_help": "List the app folders to build. Each name is a folder inside .github that holds app.json and icon.png. Folders not listed here are ignored. Keys starting with _ are ignored.",
-  "builds": ["elephant"]
+  "builds": ["elephant", "test"]
 }
