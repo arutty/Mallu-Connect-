@@ -36,5 +36,11 @@
   "orientation": "default",
 
   "_backgroundColor": "Icon background and app background colour, e.g. #ffffff",
-  "backgroundColor": "#0f1115"
+  "backgroundColor": "#0f1115",
+
+  "_splashColor": "Splash screen background colour while the app starts (empty = same as backgroundColor). Your icon.png is shown in the middle",
+  "splashColor": "",
+
+  "_offlinePage": "With url: show a No connection page with a retry button instead of a blank error screen (true or false)",
+  "offlinePage": true
 }

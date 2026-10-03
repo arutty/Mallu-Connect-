@@ -12,5 +12,7 @@
   "allowNavigation": ["127.0.0.1", "localhost", "10.0.2.2"],
   "permissions": [],
   "orientation": "default",
-  "backgroundColor": "#0f1115"
+  "backgroundColor": "#0f1115",
+  "splashColor": "",
+  "offlinePage": true
 }
