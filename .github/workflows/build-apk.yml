@@ -13,6 +13,7 @@
 #   "clone"  (default) -> the official Web2APK release (latest tag, see WEB2APK_REF) is cloned.
 #   "."                -> scripts/build.mjs from THIS repo is used (your own edited fork).
 # Only the folders listed in "builds" are built; every other folder is ignored.
+# A missing app.json / icon.png in a listed folder is not an error: Web2APK's defaults are used.
 # Push (or run manually) -> Actions tab -> Build APK -> run -> Artifacts -> apk-<app-name>
 name: Build APK
 
@@ -80,13 +81,13 @@ jobs:
             const folder = `${dir}/${name}`;
             if (!fs.existsSync(folder) || !fs.statSync(folder).isDirectory()) fail(`${at}: folder ${folder}/ does not exist`);
             for (const f of ['app.json', 'icon.png'])
-              if (!fs.existsSync(`${folder}/${f}`)) fail(`${at}: ${folder}/${f} is missing`);
+              if (!fs.existsSync(`${folder}/${f}`)) console.log(`::warning::${folder}/${f} is missing - Web2APK's default ${f === 'app.json' ? 'settings are' : 'icon is'} used for "${name}"`);
             matrix.push({ name });
           });
 
           console.log(`Build script source: ${source === '.' ? '"." (this repo)' : '"clone" (official release)'}`);
           console.log(`Will build ${matrix.length} APK(s):`);
-          matrix.forEach((m) => console.log(`  - ${dir}/${m.name}/  (app.json + icon.png)`));
+          matrix.forEach((m) => console.log(`  - ${dir}/${m.name}/`));
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\nsource=${source}\n`);
           NODE
 

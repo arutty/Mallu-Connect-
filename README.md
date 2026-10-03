@@ -106,7 +106,8 @@ After pushing, open **Actions → Build APK → (latest run) → Artifacts → `
 
 | Missing | What happens |
 |---|---|
-| `app.json` or `icon.png` | The build **stops** with a clear error that names the missing file |
+| `app.json` | Web2APK's default settings are used (a warning is shown in the log) |
+| `icon.png` | Web2APK's default icon is used (a warning is shown in the log) |
 | `index.html` in your project | A simple placeholder page is bundled |
 
 ---
@@ -170,7 +171,7 @@ Never commit your keystore or passwords.
 - **The `.github` folder is invisible:** names starting with a dot are hidden. Turn on "show hidden files". On the GitHub website use **Add file → Create new file** and type `.github/workflows/build-apk.yml` as the name.
 - **Fork: no Run workflow button:** forks start with Actions turned off. Open the **Actions** tab and enable workflows first.
 - **No workflow runs:** check that you pushed to `main` or `master` and that Actions are enabled in your repo.
-- **Build fails:** open the failed run and read the red error line. Most errors are a typo in `app.json` (e.g. an invalid `appId`) or a missing file.
+- **Build fails:** open the failed run and read the red error line. Most errors are a typo in `app.json` (e.g. an invalid `appId`).
 - **Blank screen in the app:** with `url`, the site must be online; without it, make sure `index.html` (or your `webDir`) exists.
 
 More help: [.github/README.md](.github/README.md) (fork / multi-app) · [setup/README.md](setup/README.md) (own project).

@@ -65,6 +65,7 @@ Set by `WEB2APK_REF` at the top of `.github/workflows/build-apk.yml`:
 ## Good to know
 
 - Only folders listed in `builds` are built. Other folders are ignored.
+- A listed folder must exist. If its `app.json` or `icon.png` is missing, Web2APK's default settings / icon are used (a warning is shown in the log).
 - One APK per listed folder, all built at the same time.
 - Each app needs its own unique `appId` in its `app.json`.
 - `versionCode` in `app.json` must grow with every release.

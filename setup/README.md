@@ -102,7 +102,7 @@ Never commit the keystore or passwords to your repo.
 
 ## Troubleshooting
 
-- **"`.github/app.json` is missing"** → you did not copy the whole `setup/.github` folder.
+- **Default name, id or icon in the APK** → `.github/app.json` or `.github/icon.png` is missing (see the yellow warning in the run log). You did not copy the whole `setup/.github` folder.
 - **Workflow does not start on push** → it only runs on `main` / `master`. Otherwise use **Actions → Build APK → Run workflow**.
 - **No APK in Artifacts** → open the run and read the red error in the log.
 - **Need 2-3 APKs at once, or want to edit the build script?** → fork the Web2APK repo and use its root `.github` folder instead.
