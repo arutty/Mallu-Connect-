@@ -1,46 +1,18 @@
 {
-  // Name shown under the app icon
   "appName": "elephant App",
-
-  // Unique Android package name, e.g. com.mycompany.myapp (change it for every different app)
   "appId": "com.elephant.app",
-
-  // versionName is shown to users; versionCode must be a whole number that grows with every release
   "versionName": "1.0.0",
   "versionCode": 1,
-
-  // Output file name without .apk (empty = taken from appName)
   "apkName": "elephant",
-
-  // Live website address to load (empty = bundle this repo's web files)
   "url": "https://bhawan-kavinda.github.io/elephant/",
-
-  // Folder with the built site (empty = auto-detect dist, build, www, public, then repo root, then docs)
   "webDir": "",
-
-  // Run before bundling if the site needs a build, e.g. npm ci && npm run build (then set webDir to dist)
   "buildCommand": "",
-
   "androidScheme": "https",
   "allowCleartext": true,
-
-  // Hosts the app may open inside itself; other links open in the browser.
-  // The host of url is added automatically. Wildcards work, e.g. *.example.com
   "allowNavigation": ["127.0.0.1", "localhost", "10.0.2.2"],
-
-  // Extra Android permissions, e.g. ["CAMERA", "ACCESS_FINE_LOCATION", "RECORD_AUDIO"]
   "permissions": [],
-
-  // default, portrait or landscape
   "orientation": "default",
-
-  // Icon background and app background colour, e.g. #ffffff
   "backgroundColor": "#0f1115",
-
-  // Splash screen background colour while the app starts (empty = same as backgroundColor).
-  // Your icon.png is shown in the middle
   "splashColor": "",
-
-  // With url: show a No connection page with a retry button instead of a blank error screen
   "offlinePage": true
 }
