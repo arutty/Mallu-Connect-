@@ -1,46 +1,46 @@
 {
-  "_help": "Edit the values below. Keys starting with _ are ignored. Delete any key you don't need - defaults are used.",
-
-  "_appName": "Name shown under the app icon",
+  // Name shown under the app icon
   "appName": "elephant App",
 
-  "_appId": "Unique Android package name, e.g. com.mycompany.myapp (change it for every different app)",
+  // Unique Android package name, e.g. com.mycompany.myapp (change it for every different app)
   "appId": "com.elephant.app",
 
-  "_version": "versionName is shown to users; versionCode must be a whole number that grows with every release",
+  // versionName is shown to users; versionCode must be a whole number that grows with every release
   "versionName": "1.0.0",
   "versionCode": 1,
 
-  "_apkName": "Output file name without .apk (empty = taken from appName)",
+  // Output file name without .apk (empty = taken from appName)
   "apkName": "elephant",
 
-  "_url": "Live website address to load, e.g. https://example.com (empty = bundle this repo's web files)",
+  // Live website address to load (empty = bundle this repo's web files)
   "url": "https://bhawan-kavinda.github.io/elephant/",
 
-  "_webDir": "Folder with the built site (empty = auto-detect dist, build, www, public, then repo root, then docs)",
+  // Folder with the built site (empty = auto-detect dist, build, www, public, then repo root, then docs)
   "webDir": "",
 
-  "_buildCommand": "Run before bundling if the site needs a build, e.g. npm ci && npm run build (then set webDir to dist)",
+  // Run before bundling if the site needs a build, e.g. npm ci && npm run build (then set webDir to dist)
   "buildCommand": "",
 
   "androidScheme": "https",
   "allowCleartext": true,
 
-  "_allowNavigation": "Hosts the app may open inside itself; other links open in the browser. The host of url is added automatically. Wildcards work, e.g. *.example.com",
+  // Hosts the app may open inside itself; other links open in the browser.
+  // The host of url is added automatically. Wildcards work, e.g. *.example.com
   "allowNavigation": ["127.0.0.1", "localhost", "10.0.2.2"],
 
-  "_permissions": "Extra Android permissions, e.g. [\"CAMERA\", \"ACCESS_FINE_LOCATION\", \"RECORD_AUDIO\"]",
+  // Extra Android permissions, e.g. ["CAMERA", "ACCESS_FINE_LOCATION", "RECORD_AUDIO"]
   "permissions": [],
 
-  "_orientation": "default, portrait or landscape",
+  // default, portrait or landscape
   "orientation": "default",
 
-  "_backgroundColor": "Icon background and app background colour, e.g. #ffffff",
+  // Icon background and app background colour, e.g. #ffffff
   "backgroundColor": "#0f1115",
 
-  "_splashColor": "Splash screen background colour while the app starts (empty = same as backgroundColor). Your icon.png is shown in the middle",
+  // Splash screen background colour while the app starts (empty = same as backgroundColor).
+  // Your icon.png is shown in the middle
   "splashColor": "",
 
-  "_offlinePage": "With url: show a No connection page with a retry button instead of a blank error screen (true or false)",
+  // With url: show a No connection page with a retry button instead of a blank error screen
   "offlinePage": true
 }
