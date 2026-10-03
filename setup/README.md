@@ -5,6 +5,7 @@ It builds **one APK** from **one `app.json`** and **one `icon.png`**.
 
 > [!IMPORTANT]
 > **Copy only the `.github` folder that is inside this `setup/` folder** ([`setup/.github`](./.github)).
+> 📦 **Ready-made zip (always the newest release): [web2apk-setup.zip](https://github.com/bhawan-kavinda/Web2APK/releases/latest/download/web2apk-setup.zip)** - it contains exactly this `.github` folder.
 > Do **not** copy the `.github` folder from the root of the Web2APK repo. That one is for people who fork the repo or build several APKs at once.
 
 ---
@@ -21,7 +22,8 @@ setup/
 
 ## How to use (5 steps)
 
-1. **Copy** the whole `setup/.github` folder into the **root** of your web project's repo.
+1. **Download** [web2apk-setup.zip](https://github.com/bhawan-kavinda/Web2APK/releases/latest/download/web2apk-setup.zip), unzip it, and **copy** the whole `.github` folder from it into the **root** of your web project's repo.
+   (Same folder as `setup/.github` in this repo. The name starts with a dot, so turn on "show hidden files" if you cannot see it.)
    After copying, your project must contain `.github/workflows/build-apk.yml`, `.github/app.json` and `.github/icon.png`.
    If your project already has a `.github` folder, merge the files into it.
 2. **Edit `.github/app.json`** (see "app.json" below). At minimum change `appName`, `appId` and `url`.
