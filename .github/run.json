@@ -1,0 +1,6 @@
+{
+  "_help": "List every APK to build. One entry = one json (config) + one png (icon), both inside this .github folder. Any json/png not listed here is ignored. Keys starting with _ are ignored.",
+  "builds": [
+    { "config": "app.json", "icon": "icon.png" }
+  ]
+}
