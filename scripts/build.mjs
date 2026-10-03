@@ -118,7 +118,7 @@ export function loadConfig() {
 export function validate(cfg) {
   const bad = (m) => fail(`app.json: ${m}`);
   const str = (k) => typeof cfg[k] === 'string' || bad(`"${k}" must be a string`);
-  ['appName', 'appId', 'versionName', 'apkName', 'url', 'webDir', 'buildCommand', 'androidScheme', 'orientation', 'backgroundColor'].forEach(str);
+  ['appName', 'appId', 'versionName', 'apkName', 'url', 'webDir', 'buildCommand', 'androidScheme', 'orientation', 'backgroundColor', 'splashColor'].forEach(str);
 
   if (!/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/.test(cfg.appId))
     bad(`"appId" must look like com.company.app (letters/digits/underscore, at least two parts), got "${cfg.appId}"`);
@@ -136,7 +136,10 @@ export function validate(cfg) {
   if (!['http', 'https'].includes(cfg.androidScheme)) bad('"androidScheme" must be "http" or "https"');
   if (!['default', 'portrait', 'landscape'].includes(cfg.orientation)) bad('"orientation" must be default, portrait or landscape');
   if (!/^#[0-9a-f]{6}$/i.test(cfg.backgroundColor)) bad('"backgroundColor" must look like #0f1115');
+  if (cfg.splashColor && !/^#[0-9a-f]{6}$/i.test(cfg.splashColor)) bad('"splashColor" must look like #0f1115 (or be empty to use backgroundColor)');
+  if (!cfg.splashColor) cfg.splashColor = cfg.backgroundColor;
   if (typeof cfg.allowCleartext !== 'boolean') bad('"allowCleartext" must be true or false');
+  if (typeof cfg.offlinePage !== 'boolean') bad('"offlinePage" must be true or false');
   for (const k of ['allowNavigation', 'permissions'])
     if (!Array.isArray(cfg[k]) || cfg[k].some((x) => typeof x !== 'string' || !x.trim())) bad(`"${k}" must be an array of strings`);
 
@@ -192,6 +195,20 @@ function warnIfBuildBased(cfg, root) {
   } catch { /* ignore */ }
 }
 
+/** "No connection" page shown instead of a blank error screen when the live url cannot be loaded. */
+function writeOfflinePage(cfg) {
+  const tpl = fs.readFileSync(path.join(ROOT, 'defaults', 'offline.html'), 'utf8');
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(cfg.backgroundColor.slice(i, i + 2), 16));
+  const fg = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#111111' : '#f2f2f4';
+  const url = JSON.stringify(cfg.url).replace(/</g, '\\u003c');
+  const out = tpl
+    .replace(/__BG__/g, () => cfg.backgroundColor)
+    .replace(/__FG__/g, () => fg)
+    .replace(/__NAME__/g, () => cfg.appName)
+    .replace(/__URL__/g, () => url); // url last, so nothing in it is treated as a placeholder
+  fs.writeFileSync(path.join(WWW_DIR, 'offline.html'), out);
+}
+
 function prepareWeb(cfg) {
   step('Preparing web content');
   fs.rmSync(WWW_DIR, { recursive: true, force: true });
@@ -199,6 +216,7 @@ function prepareWeb(cfg) {
   if (cfg.url) {
     log(`url is set -> app will load ${cfg.url} (web files are not bundled)`);
     copyDir(path.join(ROOT, 'placeholder'), WWW_DIR);
+    if (cfg.offlinePage) writeOfflinePage(cfg);
     return;
   }
 
@@ -228,13 +246,17 @@ function prepareWeb(cfg) {
 
 export function writeCapacitorConfig(cfg) {
   const server = { androidScheme: cfg.androidScheme, cleartext: cfg.allowCleartext, allowNavigation: cfg.allowNavigation };
-  if (cfg.url) server.url = cfg.url;
+  if (cfg.url) {
+    server.url = cfg.url;
+    if (cfg.offlinePage) server.errorPath = 'offline.html';
+  }
   const capCfg = {
     appId: cfg.appId,
     appName: cfg.appName,
     webDir: 'www',
     backgroundColor: cfg.backgroundColor,
     server,
+    plugins: { SplashScreen: { launchAutoHide: true, launchShowDuration: 1000, backgroundColor: cfg.splashColor, showSpinner: false } },
     android: { allowMixedContent: cfg.allowCleartext },
   };
   fs.writeFileSync(path.join(ROOT, 'capacitor.config.json'), JSON.stringify(capCfg, null, 2) + '\n');
@@ -268,6 +290,25 @@ async function prepareIcon(src, { plain = false } = {}) {
     }
   }
   fs.copyFileSync(src, dst);
+}
+
+/** Splash image: splashColor background with the icon in the middle (capacitor-assets turns it into every Android size). */
+async function prepareSplash(cfg) {
+  try {
+    const sharp = createRequire(path.join(ROOT, 'package.json'))('sharp');
+    const size = 2732;
+    const logoSize = Math.round(size * 0.28);
+    const logo = await sharp(path.join(ROOT, 'resources', 'icon.png'))
+      .resize(logoSize, logoSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+    await sharp({ create: { width: size, height: size, channels: 4, background: cfg.splashColor } })
+      .composite([{ input: logo, gravity: 'center' }])
+      .png()
+      .toFile(path.join(ROOT, 'resources', 'splash.png'));
+  } catch (e) {
+    warn(`Could not create the splash image (${e.message}); the default splash will be used`);
+  }
 }
 
 // ---------------------------------------------------------------- android patching
@@ -390,7 +431,7 @@ export function printFingerprint(ks) {
  * If it still reports that, the build stops instead of silently shipping the default Capacitor icon.
  */
 function generateIcons(cfg) {
-  const args = ['capacitor-assets', 'generate', '--android', '--assetPath', 'resources', '--iconBackgroundColor', cfg.backgroundColor, '--iconBackgroundColorDark', cfg.backgroundColor];
+  const args = ['capacitor-assets', 'generate', '--android', '--assetPath', 'resources', '--iconBackgroundColor', cfg.backgroundColor, '--iconBackgroundColorDark', cfg.backgroundColor, '--splashBackgroundColor', cfg.splashColor, '--splashBackgroundColorDark', cfg.splashColor];
   log(`$ npx ${args.join(' ')}`);
   const r = spawnSync('npx', args, { cwd: ROOT, encoding: 'utf8' });
   if (r.stdout) process.stdout.write(r.stdout);
@@ -442,6 +483,7 @@ export async function main() {
   step('Installing dependencies');
   run('npm', ['install', '--no-audit', '--no-fund']);
   await prepareIcon(icon.file);
+  await prepareSplash(cfg);
 
   step('Creating fresh Android project');
   fs.rmSync(ANDROID_DIR, { recursive: true, force: true });

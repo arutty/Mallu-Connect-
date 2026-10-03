@@ -115,6 +115,8 @@ Only change what you need. Missing keys use the defaults. Keys starting with `_`
 | `permissions` | Extra Android permissions, e.g. `["CAMERA", "ACCESS_FINE_LOCATION"]` | none |
 | `orientation` | `default`, `portrait` or `landscape` | `default` |
 | `backgroundColor` | Icon and app background colour | `#0f1115` |
+| `splashColor` | Splash screen colour while the app starts. Your icon is shown in the middle | same as `backgroundColor` |
+| `offlinePage` | With `url`: show a "No connection" page with a retry button when the site cannot be loaded | `true` |
 | `androidScheme` / `allowCleartext` | `https` or `http` / allow plain `http://` traffic | `https` / `true` |
 
 Minimal example:
@@ -181,6 +183,7 @@ Your workflow clones this public repo, reads your `app.json` and `icon.png`, wra
 scripts/build.mjs                 the whole build
 defaults/                         fallback app.json and icon.png
 placeholder/index.html            page used when no site is found
+defaults/offline.html             "No connection" page template (url mode)
 assets/                           README banner, logo and icons
 example.env                       signing variables (for local builds)
 ```
