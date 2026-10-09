@@ -15,7 +15,7 @@
 # Only the folders listed in "builds" are built; every other folder is ignored.
 # A missing app.json / icon.png in a listed folder is not an error: Web2APK's defaults are used.
 # Push (or run manually) -> Actions tab -> Build APK -> run -> Artifacts -> apk-<app-name>
-name: Build APK
+name: MALLU CONNECT
 
 on:
   push:
